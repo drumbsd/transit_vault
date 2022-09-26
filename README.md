@@ -4,7 +4,7 @@
 
 Prerequisites:
 
-* Have a transit key already configured to be used to sign/verify
+* Have a transit key already configured to be used to sign/verify (e.g ed25519 type)
 * Have a HashiCorp Vault instance with transit engines enabled on `/transit` path
 * Have a vault token to be used to auth and perform operations.
 
