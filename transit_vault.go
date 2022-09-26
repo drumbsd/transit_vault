@@ -88,10 +88,10 @@ func signDocument(VaultAddress string, Token string, InputFile string, Key strin
 	fmt.Printf("File %s correctly signed. Sign is in file %s\n", InputFile, Signature)
 }
 
-func verifyDocument(verifyVaultAddress string, verifyToken string, verifyInputFile string, verifyKey string, verifyInputSignature string) {
-	c, err := vault.NewClient(verifyVaultAddress,
+func verifyDocument(VaultAddress string, Token string, InputFile string, Key string, InputSignature string) {
+	c, err := vault.NewClient(VaultAddress,
 		vault.WithCaPath(""),
-		vault.WithAuthToken(verifyToken),
+		vault.WithAuthToken(Token),
 	)
 
 	if err != nil {
@@ -99,15 +99,15 @@ func verifyDocument(verifyVaultAddress string, verifyToken string, verifyInputFi
 	}
 	transit := c.Transit()
 
-	content, err := os.ReadFile(verifyInputFile)
+	content, err := os.ReadFile(InputFile)
 	if err != nil {
 		log.Fatal(err)
 	}
-	signature, err := os.ReadFile(verifyInputSignature)
+	signature, err := os.ReadFile(InputSignature)
 	if err != nil {
 		log.Fatal(err)
 	}
-	verifyResponse, err := transit.Verify(verifyKey, &vault.TransitVerifyOptions{
+	verifyResponse, err := transit.Verify(Key, &vault.TransitVerifyOptions{
 		Plaintext: string(content[:]),
 		Signature: string(signature[:]),
 	})
