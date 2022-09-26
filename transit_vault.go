@@ -56,30 +56,7 @@ func main() {
 			Usage()
 			os.Exit(1)
 		}
-		c, err := vault.NewClient(*signVaultAddress,
-			vault.WithCaPath(""),
-			vault.WithAuthToken(*signToken),
-		)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		transit := c.Transit()
-
-		//key := "test123bacd"
-		content, err := os.ReadFile(*signInputFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		signResponse, err := transit.Sign(*signKey, &vault.TransitSignOptions{
-			Plaintext: string(content[:]),
-		})
-		if err != nil {
-			log.Fatalf("Error occurred during signing: %v", err)
-		}
-		//log.Println("Signature: ", signResponse.Data.Signature)
-		os.WriteFile(*signOutputSignature, []byte(signResponse.Data.Signature), 0666)
-		fmt.Printf("File %s correctly signed. Sign is in file %s\n", *signInputFile, *signOutputSignature)
+		signDocument(*signVaultAddress, *signToken, *signInputFile, *signKey, *signOutputSignature)
 
 	case "verify":
 		verifyCmd.Parse(os.Args[2:])
@@ -87,40 +64,8 @@ func main() {
 			Usage()
 			os.Exit(1)
 		}
+		verifyDocument(*verifyVaultAddress, *verifyToken, *verifyInputFile, *verifyKey, *verifyInputSignature)
 
-		c, err := vault.NewClient(*verifyVaultAddress,
-			vault.WithCaPath(""),
-			vault.WithAuthToken(*verifyToken),
-		)
-
-		if err != nil {
-			log.Fatal(err)
-		}
-		transit := c.Transit()
-
-		//key := "test123bacd"
-		content, err := os.ReadFile(*verifyInputFile)
-		if err != nil {
-			log.Fatal(err)
-		}
-		signature, err := os.ReadFile(*verifyInputSignature)
-		if err != nil {
-			log.Fatal(err)
-		}
-		verifyResponse, err := transit.Verify(*verifyKey, &vault.TransitVerifyOptions{
-			Plaintext: string(content[:]),
-			Signature: string(signature[:]),
-		})
-		if err != nil {
-			log.Fatalf("Error occurred during signing: %v", err)
-		}
-		if !verifyResponse.Data.Valid {
-			fmt.Print("Sign is not valid!!!! ")
-			color.Red("KO")
-		} else {
-			fmt.Print("Sign is valid!!!! ")
-			color.Green("OK")
-		}
 		//log.Println("Valid: ", verifyResponse.Data.Valid)
 		//os.WriteFile(*signOutputSignature, []byte(signResponse.Data.Signature), 0666)
 		//fmt.Printf("File %s correctly signed. Sign is in file %s\n", *verifyInputFile, *verifyInputSignature)
@@ -178,4 +123,67 @@ func main() {
 	//}
 	//log.Println("Plaintext: ", decryptResponse.Data.Plaintext)
 
+}
+
+func signDocument(signVaultAddress string, signToken string, signInputFile string, signKey string, signOutputSignature string) {
+	c, err := vault.NewClient(signVaultAddress,
+		vault.WithCaPath(""),
+		vault.WithAuthToken(signToken),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	transit := c.Transit()
+
+	//key := "test123bacd"
+	content, err := os.ReadFile(signInputFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	signResponse, err := transit.Sign(signKey, &vault.TransitSignOptions{
+		Plaintext: string(content[:]),
+	})
+	if err != nil {
+		log.Fatalf("Error occurred during signing: %v", err)
+	}
+	//log.Println("Signature: ", signResponse.Data.Signature)
+	os.WriteFile(signOutputSignature, []byte(signResponse.Data.Signature), 0666)
+	fmt.Printf("File %s correctly signed. Sign is in file %s\n", signInputFile, signOutputSignature)
+}
+
+func verifyDocument(verifyVaultAddress string, verifyToken string, verifyInputFile string, verifyKey string, verifyInputSignature string) {
+	c, err := vault.NewClient(verifyVaultAddress,
+		vault.WithCaPath(""),
+		vault.WithAuthToken(verifyToken),
+	)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	transit := c.Transit()
+
+	//key := "test123bacd"
+	content, err := os.ReadFile(verifyInputFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	signature, err := os.ReadFile(verifyInputSignature)
+	if err != nil {
+		log.Fatal(err)
+	}
+	verifyResponse, err := transit.Verify(verifyKey, &vault.TransitVerifyOptions{
+		Plaintext: string(content[:]),
+		Signature: string(signature[:]),
+	})
+	if err != nil {
+		log.Fatalf("Error occurred during signing: %v", err)
+	}
+	if !verifyResponse.Data.Valid {
+		fmt.Print("Sign is not valid!!!! ")
+		color.Red("KO")
+	} else {
+		fmt.Print("Sign is valid!!!! ")
+		color.Green("OK")
+	}
 }
