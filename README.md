@@ -18,6 +18,12 @@ Prerequisites:
 ```
 ./transit_vault sign -key test123bacd -input main.go -signature main.go.signature -token s.0wtcFidsdcdscscsm -vaultaddress https://vault1:8200
 ```
+
+```
+./transit_vault verify -key test123bacd -input main.go -signature main.go.signature -token s.0wtcFidsdcdscscsm -vaultaddress https://vault1:8200
+```
+
+
 * -key is the key used to sign/verify documents
 * -input is the file we want to sign/verify
 * -signature is the file where signature is saved when sign OR is the file readed to verify file against the signature
