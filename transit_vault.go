@@ -17,49 +17,61 @@ func Usage() {
 	println("")
 	println("To sign a document/file:")
 	println("")
-	println("# ./transit_vault -cmd sign -key test123bacd -input main.go -signature main.go.signature -token s.0wtcFidsdcdscscsm -vaultaddress https://vault1:8200")
+	println("# ./transit_vault sign -key test123bacd -input main.go -signature main.go.signature -token s.0wtcFidsdcdscscsm -vaultaddress https://vault1:8200")
 	println("")
 	println("To verify a document/file")
 	println("")
-	println("# ./transit_vault -cmd verify -key test123bacd -input main.go -signature main.go.signature -token s.0wtcFidsdcdscscsm -vaultaddress https://vault1:8200")
+	println("# ./transit_vault verify -key test123bacd -input main.go -signature main.go.signature -token s.0wtcFidsdcdscscsm -vaultaddress https://vault1:8200")
 	println("")
 }
 
+var (
+	signCmd      = flag.NewFlagSet("sign", flag.ExitOnError)
+	verifyCmd    = flag.NewFlagSet("verify", flag.ExitOnError)
+	VaultAddress string
+	InputFile    string
+	Signature    string
+	Key          string
+	Token        string
+)
+
+func setupCommonFlags() {
+	for _, fs := range []*flag.FlagSet{signCmd, verifyCmd} {
+		fs.StringVar(&VaultAddress, "vaultaddress", "", "Vault Address e.g. (https://xxx.xxx.xxx.xxx:8200)")
+		fs.StringVar(&InputFile, "input", "", "Input file to sign/verify")
+		fs.StringVar(&Signature, "signature", "", "Where to save/read digital signature")
+		fs.StringVar(&Key, "key", "", "Key to use to sign/verify")
+		fs.StringVar(&Token, "token", "nil", "Vault Token")
+
+	}
+}
 func main() {
 
-	Cmd := flag.String("cmd", "nil", "sign/verify")
-	VaultAddress := flag.String("vaultaddress", "", "Vault Address e.g. (https://xxx.xxx.xxx.xxx:8200)")
-	InputFile := flag.String("input", "", "Input file to sign/verify")
-	Signature := flag.String("signature", "", "Where to save/read digital signature")
-	Key := flag.String("key", "", "Key to use to sign/verify")
-
-	Token := flag.String("token", "nil", "Vault Token")
-
-	flag.Parse()
-	if flag.NFlag() < 6 {
-		Usage()
-		os.Exit(1)
-	}
 	if len(os.Args) < 2 {
 		Usage()
 		os.Exit(1)
 	}
 
-	switch *Cmd {
-
+	setupCommonFlags()
+	switch os.Args[1] {
 	case "sign":
-
-		signDocument(*VaultAddress, *Token, *InputFile, *Key, *Signature)
-
+		signCmd.Parse(os.Args[2:])
+		if signCmd.NFlag() < 5 {
+			Usage()
+			os.Exit(1)
+		}
+		signDocument(VaultAddress, Token, InputFile, Key, Signature)
 	case "verify":
-
-		verifyDocument(*VaultAddress, *Token, *InputFile, *Key, *Signature)
+		verifyCmd.Parse(os.Args[2:])
+		if verifyCmd.NFlag() < 5 {
+			Usage()
+			os.Exit(1)
+		}
+		verifyDocument(VaultAddress, Token, InputFile, Key, Signature)
 
 	default:
-		fmt.Println("expected 'sign' or 'verify' subcommands")
-		os.Exit(1)
+		log.Fatalf("[ERROR] unknown subcommand '%s', see help for more details.", os.Args[1])
 	}
-
 }
 
 func signDocument(VaultAddress string, Token string, InputFile string, Key string, Signature string) {
