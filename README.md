@@ -13,6 +13,18 @@ Prerequisites:
 ```
 # go build transit_vault.go
 ```
+
+or
+
+For Linux
+```
+docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp -e GOOS=linux golang:1.16  go build transit_vault.go
+```
+
+For Mac
+```
+docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp -e GOOS=darwin golang:1.16  go build transit_vault.go
+```
 ## Usage
 
 ```
