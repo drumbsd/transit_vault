@@ -129,6 +129,7 @@ func verifyDocument(VaultAddress string, Token string, InputFile string, Key str
 	if !verifyResponse.Data.Valid {
 		fmt.Print("Sign is not valid!!!! ")
 		color.Red("KO")
+		os.Exit(1)
 	} else {
 		fmt.Print("Sign is valid!!!! ")
 		color.Green("OK")
